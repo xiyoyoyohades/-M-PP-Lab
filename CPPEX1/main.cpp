@@ -9,16 +9,20 @@
 #include "CPPEX1.h"
 
 using namespace std;
-
+void check_mem(void* p) {
+    if(!p){ throw std::bad_alloc();}
+}
 
 void initSTACK(STACK *const p, int m){
     p->elems = (int*)malloc(m*sizeof(int));
+    check_mem(p);
     p->max = m;
     p->pos = 0;
 }
 
 void initSTACK(STACK *const p, const STACK &s){
     p->elems = (int*)malloc(sizeof(int)*s.max);
+    check_mem(p);
     p->pos = s.pos;
     for(int i=0; i<s.pos; i++){
         p->elems[i] = s.elems[i];
@@ -64,6 +68,7 @@ STACK *const assign(STACK*const p, const STACK&s){
     p->pos = s.pos;
     free(p->elems);
     p->elems = (int*)malloc(sizeof(int)*p->max);
+    check_mem(p);
     for(int i=0; i<s.pos; i++){
         p->elems[i] = s.elems[i];
     }
@@ -160,13 +165,15 @@ int main(int argc, char *argv[])
         for(int i=1; i<argc; i++){
             argument = string(argv[i]);
             if((argument=="-s") || (argument=="-S")){
+                    printf("S");
                     if(check_after(i, argc,argv)){
                         i++;
                         argument=string(argv[i]);
                         if_valid=convert(argument, arg_param);
                         if(if_valid){
+
                             initSTACK(stack, arg_param);
-                            printf("S  %d", arg_param);
+                            printf("  %d", arg_param);
                         }else{
                             if(if_valid==-1){
                                 throw logic_error("invalid parameter");
@@ -232,10 +239,12 @@ int main(int argc, char *argv[])
                     }
 
             } else if((argument=="-c") || (argument=="-C")){
+                printf("  C");
                 STACK* NewStack=new STACK;
                 initSTACK(NewStack, *stack);
+                destroySTACK(stack);
                 stack= NewStack;
-                printf("  C");
+
                 if(howMany(stack)){
                     printf("  ");
                     print(stack);
@@ -251,6 +260,7 @@ int main(int argc, char *argv[])
                         STACK* NewStack=new STACK;
                         initSTACK(NewStack, arg_param);
                         assign(NewStack, *stack);
+                        destroySTACK(stack);
                         stack= NewStack;
 
                         if(howMany(stack)){
@@ -304,6 +314,11 @@ int main(int argc, char *argv[])
 
         }
     }catch(logic_error error_caught){
+        printf("  E");
+        fprintf(stderr, "%s\n", error_caught.what());
+        fclose(stdout);
+        return 1;
+    }catch(bad_alloc error_caught){
         printf("  E");
         fprintf(stderr, "%s\n", error_caught.what());
         fclose(stdout);

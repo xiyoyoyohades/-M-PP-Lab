@@ -159,13 +159,14 @@ int main(int argc, char *argv[])
         for(int i=1; i<argc; i++){
             argument = string(argv[i]);
             if((argument=="-s") || (argument=="-S")){
+                    std::cout<<"S";
                     if(check_after(i, argc,argv)){
                         i++;
                         argument=string(argv[i]);
                         if_valid=convert(argument, arg_param);
                         if(if_valid){
                             stack= new STACK(arg_param);
-                            std::cout<<"S  "<<arg_param;
+                            std::cout<<"  "<<arg_param;
                         }else{
                             if(if_valid==-1){
                                 throw logic_error("invalid parameter");
@@ -229,6 +230,7 @@ int main(int argc, char *argv[])
 
             } else if((argument=="-c") || (argument=="-C")){
                 STACK* NewStack=new STACK(*stack);
+                delete stack;
                 stack= NewStack;
                 std::cout<<"  C";
                 if(int(*stack)){
@@ -246,6 +248,7 @@ int main(int argc, char *argv[])
                         STACK* NewStack=new STACK(arg_param);
                         //NewStack->assign(*stack);
                         *NewStack=*stack;
+                        delete stack;
                         stack= NewStack;
 
                         if(int(*stack)){
@@ -300,6 +303,12 @@ int main(int argc, char *argv[])
 
         }
     }catch(logic_error error_caught){
+        std::cout<<"  E";
+        std::cerr<<error_caught.what()<<endl;
+        cout.rdbuf(backup);
+        outputfile.close();
+        return 1;
+    }catch(bad_alloc error_caught){
         std::cout<<"  E";
         std::cerr<<error_caught.what()<<endl;
         cout.rdbuf(backup);
